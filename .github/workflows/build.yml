@@ -20,41 +20,39 @@ jobs:
       - name: Build
         run: msbuild /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion=v4.6.2 GARbro.sln
       
+      # Get current date
+      - name: Get current date
+        id: date
+        run: echo "date=$(Get-Date -Format 'yyyy-MM-dd-HHmm')" >> $env:GITHUB_OUTPUT
+      
+      # Zip the build artifacts
+      - name: Create ZIP archive
+        if: success()
+        run: Compress-Archive -Path bin/Release/* -DestinationPath GARbroMono_${{ steps.date.outputs.date }}.zip
+      
       # Publish the artifacts
       - name: Publish Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: GARbro-Mod-ci-build
+          name: GARbroMono_${{ steps.date.outputs.date }}
           path: bin/Release
       
-      # Create a release with date
+      # Create a release with artifacts (only on push, not PRs)
       - name: Create Release
         if: success() && github.event_name != 'pull_request'
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}-${{ github.sha }}
-          release_name: Build ${{ github.run_number }} - ${{ github.event.head_commit.timestamp }}
+          tag_name: build-${{ steps.date.outputs.date }}
+          name: Build - ${{ steps.date.outputs.date }}
           body: |
-            Automated build from commit ${{ github.sha }}
+            🚀 Automated build
             
-            **Build Date:** ${{ github.event.head_commit.timestamp }}
-            **Commit:** ${{ github.event.head_commit.message }}
-            **Author:** ${{ github.event.head_commit.author.name }}
-          draft: false
+            **Build Date:** ${{ steps.date.outputs.date }}
+            **Commit:** ${{ github.sha }}
+            **Branch:** ${{ github.ref_name }}
+            **Message:** ${{ github.event.head_commit.message }}
+          files: GARbroMono_${{ steps.date.outputs.date }}.zip
           prerelease: false
-      
-      # Upload artifacts to release
-      - name: Upload Release Assets
-        if: success() && github.event_name != 'pull_request'
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/Release
-          asset_name: GARbro-Mono-${{ github.run_number }}.zip
-          asset_content_type: application/zip
