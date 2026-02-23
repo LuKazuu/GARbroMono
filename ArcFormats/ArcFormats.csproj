@@ -141,6 +141,7 @@
     <Compile Include="AIRNovel\ArcAIR.cs" />
     <Compile Include="aNCHOR\ArcFPD.cs" />
     <Compile Include="aNCHOR\AudioFCD.cs" />
+    <Compile Include="FrontierWorks\ArcPCARC.cs" />
     <Compile Include="Artemis\ImageNekoPNG.cs" />
     <Compile Include="CsWare\AudioWAV.cs" />
     <Compile Include="CsWare\ImageGDT.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="FC01\ArcSCXA.cs" />
     <Compile Include="FC01\BdtTables.cs" />
     <Compile Include="Fog\ArcDAT.cs" />
+    <Compile Include="FrontierWorks\ImageEXT.cs" />
     <Compile Include="GScripter\ArcDATA.cs" />
     <Compile Include="Guyzware\ArcDat.cs" />
     <Compile Include="Ism\ImagePNG.cs" />
