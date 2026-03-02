@@ -224,7 +224,7 @@ namespace GameRes
             return new ArcViewStream (this, offset, size, name);
         }
         
-        public MemoryMappedViewAccessor CreateViewAccessor (long offset, uint size)
+        public MemoryMappedViewAccessor CreateViewAccessor (long offset, long size)
         {
             return m_map.CreateViewAccessor (offset, size, MemoryMappedFileAccess.Read);
         }
@@ -258,17 +258,17 @@ namespace GameRes
             private ArcView                     m_arc;
             private MemoryMappedViewAccessor    m_view;
             private long                        m_offset;
-            private uint                        m_size;
+            private long                        m_size;   // satu
             private unsafe byte*                m_mem;
 
             public long Offset      { get { return m_offset; } }
-            public uint Reserved    { get { return m_size; } }
+            public uint Reserved    { get { return (uint)Math.Min (m_size, uint.MaxValue); } }   // dua
 
             public Frame (ArcView arc)
             {
                 m_arc = arc;
                 m_offset = 0;
-                m_size = (uint)Math.Min (ArcView.PageSize, m_arc.MaxOffset);
+                m_size = m_arc.MaxOffset;   // tiga
                 m_view = m_arc.CreateViewAccessor (m_offset, m_size);
                 unsafe { m_mem = m_view.GetPointer (m_offset); }
             }
@@ -277,7 +277,7 @@ namespace GameRes
             {
                 m_arc = other.m_arc;
                 m_offset = 0;
-                m_size = (uint)Math.Min (ArcView.PageSize, m_arc.MaxOffset);
+                m_size = m_arc.MaxOffset;   // empat
                 m_view = m_arc.CreateViewAccessor (m_offset, m_size);
                 unsafe { m_mem = m_view.GetPointer (m_offset); }
             }
@@ -286,7 +286,7 @@ namespace GameRes
             {
                 m_arc = arc;
                 m_offset = Math.Min (offset, m_arc.MaxOffset);
-                m_size = (uint)Math.Min (size, m_arc.MaxOffset-m_offset);
+                m_size = m_arc.MaxOffset - m_offset;  // lima
                 m_view = m_arc.CreateViewAccessor (m_offset, m_size);
                 unsafe { m_mem = m_view.GetPointer (m_offset); }
             }
@@ -299,19 +299,17 @@ namespace GameRes
                         throw new ArgumentOutOfRangeException ("offset", "Too large offset specified for memory mapped file view.");
                     if (disposed)
                         throw new ObjectDisposedException (null);
-                    if (size < ArcView.PageSize)
-                        size = (uint)ArcView.PageSize;
-                    if (size > m_arc.MaxOffset-offset)
-                        size = (uint)(m_arc.MaxOffset-offset);
+                    long new_size = m_arc.MaxOffset - offset;   // enam
                     var old_view = m_view;
-                    m_view = m_arc.CreateViewAccessor (offset, size);
+                    m_view = m_arc.CreateViewAccessor (offset, new_size);   // tujuh
                     old_view.SafeMemoryMappedViewHandle.ReleasePointer();
                     old_view.Dispose();
                     m_offset = offset;
-                    m_size = size;
+                    m_size = new_size;   // delapan
                     unsafe { m_mem = m_view.GetPointer (m_offset); }
                 }
-                return (uint)(m_offset + m_size - offset);
+                long available = m_offset + m_size - offset;   // sembilan
+                return (uint)Math.Min (available, uint.MaxValue);   // sepuluh
             }
 
             public void StrictReserve (long offset, uint size)
@@ -566,3 +564,4 @@ namespace GameRes
         #endregion
     }
 }
+
