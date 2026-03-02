@@ -224,7 +224,7 @@ namespace GameRes
             return new ArcViewStream (this, offset, size, name);
         }
         
-        public MemoryMappedViewAccessor CreateViewAccessor (long offset, long size)
+        public MemoryMappedViewAccessor CreateViewAccessor (long offset, long size)  // initial
         {
             return m_map.CreateViewAccessor (offset, size, MemoryMappedFileAccess.Read);
         }
